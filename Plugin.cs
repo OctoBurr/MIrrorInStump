@@ -1,5 +1,6 @@
 ﻿using BepInEx;
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 using Utilla;
 
@@ -17,6 +18,7 @@ namespace StumpMirror
     {
         bool inRoom;
         GameObject Mirror;
+        private object childObject;
 
         void Start()
         {
@@ -46,6 +48,14 @@ namespace StumpMirror
         {
             Mirror = GameObject.Find("Environment Objects/LocalObjects_Prefab/TreeRoom/TreeRoomInteractables/mirror (1)");
             Mirror.SetActive(true);
+
+            Transform[] allChildren = Mirror.GetComponentsInChildren<Transform>();
+            List<GameObject> childObjects = new List<GameObject>();
+            foreach (Transform child in allChildren)
+            {
+                childObjects.Add(child.gameObject);
+                GameObject.Destroy(child.GetComponent<Collider>());
+            }
         }
 
         void Update()
