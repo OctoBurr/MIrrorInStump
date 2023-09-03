@@ -38,6 +38,7 @@ namespace StumpMirror
         {
             Mirror = GameObject.Find("Environment Objects/LocalObjects_Prefab/TreeRoom/TreeRoomInteractables/mirror (1)");
             Mirror.SetActive(true);
+            GameObject.Destroy(Mirror.GetComponent<Collider>());
             HarmonyPatches.RemoveHarmonyPatches();
         }
 
