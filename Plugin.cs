@@ -1,86 +1,67 @@
-﻿using BepInEx;
+using BepInEx;
 using System;
-using System.Collections.Generic;
 using UnityEngine;
 using Utilla;
 
 namespace StumpMirror
 {
-    /// <summary>
-    /// This is your mod's main class.
-    /// </summary>
+    // Constants for easier maintenance
+    public static class GameObjectPaths
+    {
+        public const string Mirror = "Environment Objects/LocalObjects_Prefab/TreeRoom/TreeRoomInteractables/mirror (1)";
+    }
 
-    /* This attribute tells Utilla to look for [ModdedGameJoin] and [ModdedGameLeave] */
     [ModdedGamemode]
     [BepInDependency("org.legoandmars.gorillatag.utilla", "1.5.0")]
     [BepInPlugin(PluginInfo.GUID, PluginInfo.Name, PluginInfo.Version)]
     public class Plugin : BaseUnityPlugin
     {
-        bool inRoom;
-        GameObject Mirror;
-        private object childObject;
-
-        void Start()
+        // Called when the mod is enabled
+        void OnEnable()
         {
-            /* A lot of Gorilla Tag systems will not be set up when start is called /*
-			/* Put code in OnGameInitialized to avoid null references */
-
+            HarmonyPatches.ApplyHarmonyPatches();
             Utilla.Events.GameInitialized += OnGameInitialized;
         }
 
-        void OnEnable()
-        {
-            /* Set up your mod here */
-            /* Code here runs at the start and whenever your mod is enabled*/
-
-            HarmonyPatches.ApplyHarmonyPatches();
-        }
-
+        // Called when the mod is disabled
         void OnDisable()
         {
-            Mirror = GameObject.Find("Environment Objects/LocalObjects_Prefab/TreeRoom/TreeRoomInteractables/mirror (1)");
-            Mirror.SetActive(true);
-            GameObject.Destroy(Mirror.GetComponent<Collider>());
+            SetupMirror(true);
             HarmonyPatches.RemoveHarmonyPatches();
+            Utilla.Events.GameInitialized -= OnGameInitialized;
         }
 
+        // Called when the game is initialized
         void OnGameInitialized(object sender, EventArgs e)
         {
-            Mirror = GameObject.Find("Environment Objects/LocalObjects_Prefab/TreeRoom/TreeRoomInteractables/mirror (1)");
-            Mirror.SetActive(true);
-
-            Transform[] allChildren = Mirror.GetComponentsInChildren<Transform>();
-            List<GameObject> childObjects = new List<GameObject>();
-            foreach (Transform child in allChildren)
-            {
-                childObjects.Add(child.gameObject);
-                GameObject.Destroy(child.GetComponent<Collider>());
-            }
+            SetupMirror(true);
         }
 
-        void Update()
-        {
-            /* Code here runs every frame when the mod is enabled */
-        }
-
-        /* This attribute tells Utilla to call this method when a modded room is joined */
         [ModdedGamemodeJoin]
         public void OnJoin(string gamemode)
         {
-            /* Activate your mod here */
-            /* This code will run regardless of if the mod is enabled*/
-
-            inRoom = true;
+            // Activate your mod here
         }
 
-        /* This attribute tells Utilla to call this method when a modded room is left */
         [ModdedGamemodeLeave]
         public void OnLeave(string gamemode)
         {
-            /* Deactivate your mod here */
-            /* This code will run regardless of if the mod is enabled*/
+            // Deactivate your mod here
+        }
 
-            inRoom = false;
+        // Helper method to set up or tear down the mirror
+        private void SetupMirror(bool isActive)
+        {
+            GameObject mirror = GameObject.Find(GameObjectPaths.Mirror);
+            if (mirror != null)
+            {
+                mirror.SetActive(isActive);
+                Transform[] allChildren = mirror.GetComponentsInChildren<Transform>();
+                foreach (Transform child in allChildren)
+                {
+                    GameObject.Destroy(child.GetComponent<Collider>());
+                }
+            }
         }
     }
 }
